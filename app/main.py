@@ -9,22 +9,16 @@ app = FastAPI(
     description=settings.PROJECT_DESCRIPTION,
 )
 
-# Configurar CORS
+# Configurar CORS - Manejar el string "*"
+origins = [settings.ALLOWED_ORIGINS] if settings.ALLOWED_ORIGINS != "*" else ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS,
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Ruta raíz para verificar que el servidor está funcionando
-@app.get("/")
-async def root():
-    return {
-        "status": "online",
-        "message": "PMP Question Generator API is running"
-    }
 
 # Incluir routers
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])

@@ -1,8 +1,4 @@
 from pydantic_settings import BaseSettings
-from typing import List
-
-def get_default_origins():
-    return ["*"]
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "PMP Question Generator API"
@@ -17,14 +13,9 @@ class Settings(BaseSettings):
     SUPABASE_KEY: str
 
     # CORS
-    ALLOWED_ORIGINS: List[str] = None
+    ALLOWED_ORIGINS: str = "*"
 
     class Config:
         env_file = ".env"
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        if self.ALLOWED_ORIGINS is None:
-            self.ALLOWED_ORIGINS = ["*"]
 
 settings = Settings()
