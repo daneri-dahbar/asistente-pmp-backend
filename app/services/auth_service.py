@@ -11,35 +11,49 @@ class AuthService:
         try:
             response = self.client.auth.sign_up({
                 "email": user_data.email,
-                "password": user_data.password
+                "password": user_data.password,
+                "options": {
+                    "email_confirm": True  # Requerir confirmación de email
+                }
             })
             if response.user:
                 return UserInDB(
                     id=response.user.id,
                     email=response.user.email,
-                    is_active=True
+                    is_active=False  # Usuario inactivo hasta confirmar email
                 )
             return None
         except Exception as e:
             print(f"Error en signup: {e}")
             return None
 
-    async def login(self, email: str, password: str) -> Optional[dict]:
+    async def login(self, username: str, password: str) -> Optional[dict]:
         try:
+            # Verificar si el usuario existe y está confirmado
+            try:
+                user = self.client.auth.get_user_by_email(username)
+                if not user.user.email_confirmed_at:
+                    return None
+            except Exception:
+                return None
+
+            # Intentar login
             response = self.client.auth.sign_in_with_password({
-                "email": email,
+                "email": username,
                 "password": password
             })
+
             if response.user and response.session:
                 return {
                     "user": UserInDB(
                         id=response.user.id,
                         email=response.user.email,
-                        is_active=True
+                        is_active=bool(response.user.email_confirmed_at)
                     ),
                     "access_token": response.session.access_token,
                 }
             return None
+
         except Exception as e:
             print(f"Error en login: {e}")
             return None
